@@ -1,5 +1,5 @@
-import React, {useState, useEffect} from "react";
-import {BrowserRouter as Router, Routes, Route} from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import uuid from 'react-uuid';
 import './App.css';
 import Header from "./Header";
@@ -11,13 +11,15 @@ import api from "../api/contacts";
 
 function App() {
   const [contacts, setContacts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
 
   //Retrieve Contacts
   const retrieveContacts = async () => {
     const response = await api.get("/contacts");
     return response.data;
-  } ;
-  
+  };
+
   const addContactHandler = async (contact) => {
     console.log(contact);
     const request = {
@@ -31,10 +33,10 @@ function App() {
 
   const updateContactHandler = async (contact) => {
     const response = await api.put(`/contacts/${contact.id}`, contact);
-    const {id} = response.data;
+    const { id } = response.data;
     setContacts(
       contacts.map((contact) => {
-        return contact.id === id ? {...response.data} : contact;
+        return contact.id === id ? { ...response.data } : contact;
       })
     );
   };
@@ -47,6 +49,18 @@ function App() {
     setContacts(newContactList);
   };
 
+  const searchHandler = (searchTerm) => {
+    setSearchTerm(searchTerm);
+    if(searchTerm !== ""){
+      const newContactList = contacts.filter((contact) => {
+         return Object.values(contact)
+         .join(" ")
+         .toLocaleLowerCase()
+         .includes(searchTerm.toLocaleLowerCase());
+      });
+      setSearchResults(newContactList);
+    } 
+   };
 
 
   useEffect(() => {
@@ -54,7 +68,7 @@ function App() {
     // if(retriveContacts) setContacts(retriveContacts);
     const getAllContacts = async () => {
       const allContacts = await retrieveContacts();
-      if(allContacts) setContacts(allContacts);
+      if (allContacts) setContacts(allContacts);
     };
 
     getAllContacts();
@@ -71,13 +85,18 @@ function App() {
       <Router>
         <Header />
         <Routes>
-          <Route path="/" element={<ContactList contacts={contacts} getContactId={removeContactHandler} />} />
+          <Route path="/" element={<ContactList 
+          contacts={searchTerm.length < 1 ? contacts : searchResults} 
+          getContactId={removeContactHandler} 
+          term={searchTerm} 
+          searchKeyword={searchHandler} />} 
+          />
           <Route path="/add" element={<AddContact addContactHandler={addContactHandler} />} />
           <Route path="/edit" element={<EditContact updateContactHandler={updateContactHandler} />} />
           <Route path="/contact/:id" element={<ContactDetails />} />
         </Routes>
       </Router>
-      
+
     </div>
   );
 }
