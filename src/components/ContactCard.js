@@ -17,6 +17,12 @@ const ContactCard = (props) => {
             style={{color:"red", marginTop:"7px", float:"right", clear:"left"}}
             onClick={() => props.clickHandler(id)}
             ></i>
+            <Link to={`/edit`} state={{contact: props.contact}}>
+            <i 
+            className="edit alternate outline icon" 
+            style={{color:"blue", marginTop:"7px", float:"right", clear:"left"}}
+            ></i>
+            </Link>
         </div>
     );
 };
